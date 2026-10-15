@@ -90,7 +90,7 @@ jobs:
 
       - name: Renderizar Helm Chart (TP10B - Pattern)
         run: |
-          helm template ${{ env.HELM_RELEASE_NAME }} ./devops-portfolio -f devops-portfolio/values-prod.yaml > manifests-rendered-prod.yaml
+          helm template ${{ env.HELM_RELEASE_NAME }} ./guia-10/devops-portfolio -f ./guia-10/devops-portfolio/values-prod.yaml > manifests-rendered-prod.yaml
 
       # -------------------------------------------------------------
       # 2A. THREAGILE THREAT MODELING (TP14 - Generación de JSON)
