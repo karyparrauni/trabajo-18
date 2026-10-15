@@ -157,65 +157,65 @@ jobs:
           path: reports-json
 
       # -------------------------------------------------------------
-      # Importación de Threagile Threat Model (TP14) a DefectDojo
+      # Importación de Reportes a la API v2 de DefectDojo vía cURL
       # -------------------------------------------------------------
-      - name: Importar Threagile Threat Model a DefectDojo
-        uses: DefectDojo/import-scan-action@v1
-        with:
-          defectdojo_url: ${{ env.DEFECTDOJO_URL }}
-          api_key: ${{ env.DEFECTDOJO_TOKEN }}
-          product_name: "Notes App"
-          scan_type: 'Generic CI/CD Audit'
-          reports_path: 'reports-json/threagile-results.json'
-          engagement_name: 'CI/CD Automated Security Audits'
-          auto_create_context: true
+      - name: Importar Reportes JSON a DefectDojo API v2
+        env:
+          DEFECTDOJO_URL: ${{ env.DEFECTDOJO_URL }}
+          DEFECTDOJO_TOKEN: ${{ env.DEFECTDOJO_TOKEN }}
+          PRODUCT_NAME: "Notes App"
+          ENGAGEMENT_NAME: "CI/CD Automated Security Audits"
+        run: |
+          echo "=== Enviando auditorías a DefectDojo API v2 ==="
 
-      # -------------------------------------------------------------
-      # Importación de Semgrep JSON (TP15) a DefectDojo
-      # -------------------------------------------------------------
-      - name: Importar Semgrep a DefectDojo
-        uses: DefectDojo/import-scan-action@v1
-        with:
-          defectdojo_url: ${{ env.DEFECTDOJO_URL }}
-          api_key: ${{ env.DEFECTDOJO_TOKEN }}
-          product_name: "Notes App"
-          scan_type: 'Semgrep JSON Report'
-          reports_path: 'reports-json/semgrep-results.json'
-          engagement_name: 'CI/CD Automated Security Audits'
-          auto_create_context: true
+          upload_scan() {
+            local SCAN_TYPE="$1"
+            local FILE_PATH="$2"
+            if [ -f "$FILE_PATH" ]; then
+              echo "  [+] Enviando $SCAN_TYPE ($FILE_PATH)..."
+              RESPONSE=$(curl -s -X POST "$DEFECTDOJO_URL/api/v2/import-scan/" \
+                -H "Authorization: Token $DEFECTDOJO_TOKEN" \
+                -F "product_name=$PRODUCT_NAME" \
+                -F "engagement_name=$ENGAGEMENT_NAME" \
+                -F "scan_type=$SCAN_TYPE" \
+                -F "auto_create_context=true" \
+                -F "file=@$FILE_PATH")
 
-      # -------------------------------------------------------------
-      # Importación de Trivy JSON (TP16) a DefectDojo
-      # -------------------------------------------------------------
-      - name: Importar Trivy a DefectDojo
-        uses: DefectDojo/import-scan-action@v1
-        with:
-          defectdojo_url: ${{ env.DEFECTDOJO_URL }}
-          api_key: ${{ env.DEFECTDOJO_TOKEN }}
-          product_name: "Notes App"
-          scan_type: 'Trivy Scan'
-          reports_path: 'reports-json/trivy-container-results.json'
-          engagement_name: 'CI/CD Automated Security Audits'
-          auto_create_context: true
+              if echo "$RESPONSE" | grep -q "scan_type"; then
+                echo "      [OK] Importación exitosa"
+              else
+                echo "      [FAIL] Respuesta API: $RESPONSE"
+              fi
+            else
+              echo "  [WARN] Archivo $FILE_PATH no encontrado."
+            fi
+          }
 
-      # -------------------------------------------------------------
-      # Importación de Gitleaks JSON (TP17) a DefectDojo
-      # -------------------------------------------------------------
-      - name: Importar Gitleaks a DefectDojo
-        uses: DefectDojo/import-scan-action@v1
-        with:
-          defectdojo_url: ${{ env.DEFECTDOJO_URL }}
-          api_key: ${{ env.DEFECTDOJO_TOKEN }}
-          product_name: "Notes App"
-          scan_type: 'Gitleaks Scan'
-          reports_path: 'reports-json/gitleaks-report.json'
-          engagement_name: 'CI/CD Automated Security Audits'
-          auto_create_context: true
+          # -------------------------------------------------------------
+          # Importación de Threagile Threat Model (TP14)
+          # -------------------------------------------------------------
+          upload_scan "Generic CI/CD Audit" "reports-json/threagile-results.json"
+
+          # -------------------------------------------------------------
+          # Importación de Semgrep JSON (TP15)
+          # -------------------------------------------------------------
+          upload_scan "Semgrep JSON Report" "reports-json/semgrep-results.json"
+
+          # -------------------------------------------------------------
+          # Importación de Trivy JSON (TP16)
+          # -------------------------------------------------------------
+          upload_scan "Trivy Scan" "reports-json/trivy-container-results.json"
+
+          # -------------------------------------------------------------
+          # Importación de Gitleaks JSON (TP17)
+          # -------------------------------------------------------------
+          upload_scan "Gitleaks Scan" "reports-json/gitleaks-report.json"
 
       # -------------------------------------------------------------
       # Resumen de Centralización en GitHub
       # -------------------------------------------------------------
       - name: Resumen de Centralización en GitHub
+        if: always()
         run: |
           echo "### Centralización de Vulnerabilidades en DefectDojo :shield:" >> $GITHUB_STEP_SUMMARY
           echo "Los reportes de OWASP ZAP (TP13C), Threagile (TP14), Semgrep (TP15), Trivy (TP16) y Gitleaks (TP17) han sido procesados, desduplicados y cargados exitosamente en la instancia de DefectDojo." >> $GITHUB_STEP_SUMMARY
