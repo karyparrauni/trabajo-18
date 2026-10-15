@@ -161,8 +161,8 @@ jobs:
       # -------------------------------------------------------------
       - name: Importar Reportes JSON a DefectDojo API v2
         env:
-          DEFECTDOJO_URL: ${{ env.DEFECTDOJO_URL }}
-          DEFECTDOJO_TOKEN: ${{ env.DEFECTDOJO_TOKEN }}
+          DEFECTDOJO_URL: ${{ secrets.DEFECTDOJO_URL }}
+          DEFECTDOJO_TOKEN: ${{ secrets.DEFECTDOJO_API_KEY }}
           PRODUCT_NAME: "Notes App"
           ENGAGEMENT_NAME: "CI/CD Automated Security Audits"
         run: |
@@ -175,6 +175,7 @@ jobs:
               echo "  [+] Enviando $SCAN_TYPE ($FILE_PATH)..."
               RESPONSE=$(curl -s -X POST "$DEFECTDOJO_URL/api/v2/import-scan/" \
                 -H "Authorization: Token $DEFECTDOJO_TOKEN" \
+                -H "ngrok-skip-browser-warning: true" \
                 -F "product_name=$PRODUCT_NAME" \
                 -F "engagement_name=$ENGAGEMENT_NAME" \
                 -F "scan_type=$SCAN_TYPE" \
@@ -187,7 +188,7 @@ jobs:
                 echo "      [FAIL] Respuesta API: $RESPONSE"
               fi
             else
-              echo "  [WARN] Archivo $FILE_PATH no encontrado."
+              echo "  [WARN] Archivo $FILE_PATH no encontrado, omitiendo..."
             fi
           }
 
