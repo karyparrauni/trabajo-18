@@ -72,7 +72,6 @@ jobs:
           else
             docker build -t ${{ env.DOCKER_IMAGE }}:${{ github.sha }} .
           fi
-        run: mkdir -p reports-json
 
       - name: Descargar Artefacto de Imagen
         uses: actions/download-artifact@v5
