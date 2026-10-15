@@ -62,6 +62,16 @@ jobs:
           fetch-depth: 0
 
       - name: Crear carpeta para reportes JSON
+        run: |
+          if [ -d "./devops-TP06/backend" ]; then
+            docker build -t ${{ env.DOCKER_IMAGE }}:${{ github.sha }} ./devops-TP06/backend
+          elif [ -d "./guia-10/backend" ]; then
+            docker build -t ${{ env.DOCKER_IMAGE }}:${{ github.sha }} ./guia-10/backend
+          elif [ -d "./backend" ]; then
+            docker build -t ${{ env.DOCKER_IMAGE }}:${{ github.sha }} ./backend
+          else
+            docker build -t ${{ env.DOCKER_IMAGE }}:${{ github.sha }} .
+          fi
         run: mkdir -p reports-json
 
       - name: Descargar Artefacto de Imagen
@@ -245,5 +255,7 @@ jobs:
       - name: Despliegue con Helm en Kubernetes
         run: |
           echo "Desplegando Helm Chart en Kubernetes..."
-          # helm upgrade --install ${{ env.HELM_RELEASE_NAME }} ./devops-portfolio -n ${{ env.K8S_NAMESPACE }}
-
+          helm upgrade --install ${{ env.HELM_RELEASE_NAME || 'notes-app' }} ./guia-10/devops-portfolio \
+            --namespace ${{ env.K8S_NAMESPACE || 'prod' }} \
+            --create-namespace \
+            -f ./guia-10/devops-portfolio/values-prod.yaml
