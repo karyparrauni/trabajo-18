@@ -30,7 +30,7 @@ jobs:
 
       - name: Compilar imagen Docker
         run: |
-          docker build -t ${{ env.DOCKER_IMAGE }}:${{ github.sha }} ./backend
+          docker build -t ${{ env.DOCKER_HUB_USER }}/devops-portfolio:${{ github.sha }} ./guia-10/backend    
 
       - name: Exportar imagen a tarball efímero
         run: |
