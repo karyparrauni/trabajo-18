@@ -61,11 +61,4 @@ Integración de **OWASP DefectDojo Community Edition** para consolidar, desdupli
 | **Fase 3** | OWASP DefectDojo | Vulnerability Management | Ingestión vía API v2 y deduplicación |
 | **Fase 4** | Helm & K8s | Despliegue a producción | Release verificado en Kubernetes |
 
----
 
-## 🛠️ Comandos de Verificación Local
-
-```bash
-# Otorgar permisos y ejecutar script de carga a DefectDojo (TP18)
-chmod +x scripts/verificar-defectdojo.sh
-DEFECTDOJO_URL="http://localhost:8080" DEFECTDOJO_API_KEY="tu_token_api_v2" ./scripts/verificar-defectdojo.sh
