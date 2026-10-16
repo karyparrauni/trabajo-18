@@ -141,7 +141,7 @@ jobs:
           ENGAGEMENT_NAME: "CI/CD Automated Security Audits"
         run: |
           echo "=== Enviando auditorías a DefectDojo API v2 ==="
-          
+
           upload_scan() {
             local SCAN_TYPE="$1"
             local FILE_PATH="$2"
@@ -155,7 +155,7 @@ jobs:
                 -F "scan_type=$SCAN_TYPE" \
                 -F "auto_create_context=true" \
                 -F "file=@$FILE_PATH")
-              
+
               if echo "$RESPONSE" | grep -q "scan_type"; then
                 echo "      [OK] Importación exitosa"
               else
