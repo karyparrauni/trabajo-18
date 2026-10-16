@@ -1,148 +1,90 @@
-# 🚀 DevOps & DevSecOps Portfolio: Automated Scripts, Infrastructure & Security Pipelines
-
-<div align="center">
-
-![CI/CD Pipeline](https://github.com/karyparrauni/trabajo-17/actions/workflows/cicd.yml/badge.svg)
-![Security Scans](https://img.shields.io/badge/Security-Gitleaks%20%7C%20Trivy%20%7C%20Semgrep%20%7C%20ZAP%20%7C%20Threagile-blue)
-![Kubernetes](https://img.shields.io/badge/Orchestration-Kubernetes%20%7C%20Helm%20%7C%20k3d-326CE5)
-![IaC](https://img.shields.io/badge/IaC-Terraform-7B42BC)
-![Licencia](https://img.shields.io/badge/License-MIT-green.svg)
-
-**Repositorio Central Integrador de la Carrera DevSecOps**
-*Un recorrido práctico desde la administración del sistema operativo Linux hasta la automatización de la ciberseguridad en el ciclo de vida de entrega de software.*
-
-</div>
-
----
-
-## 📋 Tabla de Contenidos
-- [Sobre este Portfolio](#-sobre-este-portfolio)
-- [Arquitectura Integrada de la Aplicación](#-arquitectura-integrada-de-la-aplicación)
-- [Resumen del Recorrido Técnico (TP01 - TP17)](#-resumen-del-recorrido-técnico-tp01---tp17)
-- [Fábrica de CI/CD y Matriz de Seguridad](#-fábrica-de-cicd-y-matriz-de-seguridad)
-- [Stack Tecnológico](#-stack-tecnológico)
-- [Guía de Ejecución y Comandos Útiles](#-guía-de-ejecución-y-comandos-útiles)
-- [Fundamentos Metodológicos](#-fundamentos-metodológicos)
-
----
-
-## 🛠️ Sobre este Portfolio
-
-Este proyecto consolida el aprendizaje práctico de la fábrica de software de una aplicación multinivel (**Notes App**) construida con **Python Flask, NGINX y PostgreSQL**. 
-
-A lo largo de 17 trabajos prácticos integradores, el proyecto evolucionó desde scripts locales de administración hasta convertirse en un sistema distribuido en **Kubernetes**, aprovisionado con **Terraform**, empaquetado con **Helm**, monitoreado mediante **Prometheus & Grafana** y blindado mediante controles de ciberseguridad automatizados (*Shift Left* y *Runtime Security*).
-
----
-
-## 📐 Arquitectura Integrada de la Aplicación
-
-El ecosistema en producción opera bajo una arquitectura de **7 contenedores** desplegados en clústeres de Kubernetes (k3s/k3d/Minikube):
-
-                   [ Cliente Web / Navegador ]
-                                │
-                            (HTTP / 80)
-                                ▼
-                    [ Ingress Controller NGINX ]
-                                │
-     ┌──────────────────────────┴──────────────────────────┐
-     │ (Servicio Estático)                                 │ (Routing API /api)
-     ▼                                                     ▼
-[ Frontend NGINX ]                                   [ Backend Flask (WSGI Gunicorn) ] │         │ (PostgreSQL Protocol)      │ (Scrape /metrics) v         ▼ [ Database PostgreSQL ]  [ Prometheus ] (Volume: postgres-pvc)      │ ▼ [ Grafana ] (Dashboards / Alerts) ▲       ▲ │       │ [ Node Exporter ] [ cAdvisor ]
-
----
-
-## 🗂️ Resumen del Recorrido Técnico (TP01 - TP17)
-
-### 🔹 Módulo 1: Fundamentos de Sistemas, Control de Versiones y Redes
-* **TP01 — Automatización Bash:** Script `sistema.sh` para backups con timestamp, limpieza de logs con retención y reporte de salud del sistema (CPU, RAM, Disco).
-* **TP02 — Gestión de Usuarios y Principio de Menor Privilegio:** Creación del usuario de sistema `devops-deploy` y auditoría estricta de permisos de archivos.
-* **TP03 — Flujo Gitflow:** Estrategia de ramas (`main`, `develop`, `feature/*`, `hotfix/*`), merges no-fast-forward (`--no-ff`) y etiquetado de releases (`v1.0`).
-* **TP04 — Configuración Multi-Entorno & Redes:** Estructura YAML multi-entorno (`app-config.yml`) y script de diagnóstico de red (`ping`, `dig`, `curl`, `ss`, `ip`).
-
-### 🔹 Módulo 2: Contenedores, CI/CD y Monitoreo
-* **TP05 — Containerización con Docker:** Dockerfile optimizado (`python:3.12-slim`), multi-stage builds, ejecución no-root y publicación en Docker Hub.
-* **TP06 — Orquestación con Docker Compose:** Stack multi-contenedor de la Notes App (Frontend Nginx, Backend Flask, Database Postgres) con *healthchecks* y volúmenes persistentes.
-* **TP07 — Pipeline de CI/CD Automatizado:** Integración de GitHub Actions con triggers para `push` y `pull_request`, ejecución de tests con `pytest` y *linting* de código.
-* **TP08 / TP12C — Observabilidad & Monitoreo:** Stack completo con **Prometheus, Grafana, Node Exporter y cAdvisor**. Instrumentación de la app con `prometheus_client` y alertas en tiempo real.
-
-### 🔹 Módulo 3: Orquestación en Kubernetes e Infraestructura como Código (IaC)
-* **TP09 — Despliegue Nativo en Kubernetes:** Creación de `Namespace`, `Secrets` Base64, `ConfigMaps`, `PersistentVolumeClaim` (PVC), `Deployments` con probes y `Services`.
-* **TP10 / TP10B — Helm Charts & Ingress:** Empaquetado parametrizado con Helm, enrutamiento por rutas en NGINX Ingress, HPA para autoscaling y aplicación del patrón **"Render First, Validate Second" (TP10B)** para eliminar falsos positivos.
-* **TP11 — Infraestructura como Código (Terraform):** Aprovisionamiento declarativo mediante módulos HCL (`network`, `storage`, `app`) y gestión segura del `terraform.tfstate`.
-* **TP12 / TP12B — Portafolio Central e Integración Total:** Consolidación de repositorios y validación automatizada del estado de salud de todos los proyectos.
-
-### 🔹 Módulo 4: DevSecOps, Auditoría de Seguridad & Secret Scanning
-* **TP13A/B/C — Pruebas Dinámicas (DAST con OWASP ZAP):** Automatización de escaneos DAST con ZAP Automation Framework (`zap-plan.yml`), Spider, Active Scan, sanitizador SARIF (`sanitize_zap_sarif.py`) y publicación en GitHub Code Scanning.
-* **TP14 — Modelado de Amenazas Declarativo (Threagile):** Definición de la arquitectura en `threagile.yaml` (*Threat Modeling as Code*), evaluación de límites de confianza (*trust boundaries*) y generación automática de reportes PDF y diagramas DFD.
-* **TP15 — Análisis Estático de Código Fuente (SAST con Semgrep):** Auditoría multilenguaje sobre Python/Flask, Dockerfiles, Terraform y Kubernetes buscando vulnerabilidades del OWASP Top 10.
-* **TP16 — Escaneo Multidominio de Contenedores e IaC (Trivy Security Gate):** Inspección de dependencias (SCA en `requirements.txt`), capas de imágenes Docker e IaC renderizado (`manifests-rendered-prod.yaml`) dentro de una arquitectura de pipeline de 3 fases.
-* **TP17 — Secret Scanning & Ciberseguridad en Git (Gitleaks):** Control del historial de Git con **Gitleaks**, implementación de *Pre-Commit Hooks* locales, política bloqueante (**Andon Cord**) en CI/CD con `fetch-depth: 0` y remediación del historial con `git-filter-repo`.
-
----
-
-## 🛡️ Fábrica de CI/CD y Matriz de Seguridad
-
-El pipeline de **GitHub Actions** (`.github/workflows/cicd.yml`) opera bajo una **arquitectura inmutable de 3 Fases**, garantizando que el artefaco probado sea exactamente el mismo que se despliega en producción (*Build Once, Test Everywhere*):
-
-┌───────────────────────────────┐ │   FASE 1: BUILD & PACKAGE     │  --> Compila la imagen Docker y exporta el tarball 'app-image.tar' └───────────────┬───────────────┘ │ ▼ ┌───────────────────────────────┐ │ FASE 2: AUDITORÍAS PARALELAS  │ │ (Semgrep, Trivy, Gitleaks,    │  --> Ejecuta controles SAST, SCA, DAST, IaC y Secret Scanning. │  Threagile, OWASP ZAP)        │      Aplica la política ANDON CORD ante severidades HIGH/CRITICAL. └───────────────┬───────────────┘ │ ▼ ┌───────────────────────────────┐ │  FASE 3: RELEASE & DEPLOY     │  --> Promueve la imagen inmutable a Docker Hub y ejecuta el └───────────────────────────────┘      despliegue seguro en Kubernetes con Helm.
-
-### 📊 Matriz de Herramientas de Ciberseguridad Integradas
-
-| Herramienta | Tipo de Análisis | Alcance / Objetivos | Política en Pipeline |
-| :--- | :--- | :--- | :--- |
-| **Gitleaks (TP17)** | Secret Scanning | Historial de Git, Commits, API Keys, Passwords | **Andon Cord Activo** (`exit-code: 1`) |
-| **Trivy (TP16)** | SCA / Container / IaC | `requirements.txt`, Imagen Docker, Helm Renderizado | **Andon Cord Activo** (`severity: HIGH,CRITICAL`) |
-| **Semgrep (TP15)** | SAST Multilenguaje | Código Python/Flask, Dockerfile, Terraform, K8s | Reporte SARIF + Integración GitHub Security |
-| **Threagile (TP14)**| Threat Modeling | Análisis declarativo de arquitectura (`threagile.yaml`) | Generación de artefactos PDF y DFD |
-| **OWASP ZAP (TP13)**| DAST Activo/Pasivo | Endpoints HTTP en ejecución, Fuzzing, XSS, SQLi | Reporte HTML + SARIF Sanitizado |
-
----
-
-## 💻 Stack Tecnológico
-
-| Categoría | Tecnologías Utilizadas |
-| :--- | :--- |
-| **Sistemas & Scripting** | Linux (Debian/Ubuntu), Bash Scripting, Cron Jobs |
-| **Control de Versiones** | Git, GitHub, Gitflow, `git-filter-repo` |
-| **Contenedores & IaC** | Docker, Docker Compose, Helm v3, Terraform HCL |
-| **Orquestación K8s** | Kubernetes (kubectl, Ingress NGINX, k3d, K3s, Minikube) |
-| **CI/CD** | GitHub Actions, Pre-Commit Hooks, Docker Buildx |
-| **Observabilidad** | Prometheus, Grafana, Node Exporter, cAdvisor |
-| **Seguridad (DevSecOps)**| Gitleaks, Trivy, Semgrep, OWASP ZAP, Threagile |
-| **Desarrollo Base** | Python 3.12, Flask, Gunicorn, PostgreSQL, NGINX |
-
----
-
-## 🚀 Guía de Ejecución y Comandos Útiles
-
-### 1. Pruebas Locales del Stack Completo (Docker Compose)
-```bash
-# Clonar el repositorio
-git clone https://github.com/karyparrauni/trabajo-17.git
-cd trabajo-17
-
-# Levantar la aplicación de notas junto con el stack de monitoreo
-docker compose up -d --build
-
-# Verificar el estado de los servicios y ejecutar el healthcheck
-bash scripts/healthcheck.sh
-2. Auditorías Locales de Ciberseguridad
-# Escaneo local de secretos con Gitleaks
-gitleaks detect --source . -v
-
-# Probar la protección local de staged en Git
-gitleaks protect --staged -v
-
-# Escaneo de vulnerabilidades en contenedor e IaC con Trivy
-trivy fs ./backend
-helm template mi-app ./guia-10/devops-portfolio > manifests-rendered-prod.yaml
-trivy config manifests-rendered-prod.yaml
-
-# Ejecución del script de verificación técnica integrador
-bash scripts/verificar-gitleaks.sh
-📚 Fundamentos Metodológicos
-Este desarrollo aplica los principios fundamentales de las metodologías Las Tres Vías y Los 12 Factores:
-La Primera Vía (Flujo y Pensamiento Sistémico): Optimización de la cadena de valor mediante imágenes inmunes e infraestructura declarativa que aceleran la entrega de código a producción.
-La Segunda Vía (Retroalimentación Continua): Implementación del Andon Cord en CI/CD y telemetría en tiempo real con Prometheus/Grafana para detectar e interceptar fallas de forma inmediata.
-La Tercera Vía (Aprendizaje y Experimentación Continua): Prácticas de refactorización continua, simulación de ataques DAST/Fuzzing y purga de deuda técnica para fortalecer la resiliencia del sistema.
-Los 12 Factores: Externalización de configuraciones mediante variables de entorno, procesos stateless, paridad entre entornos de desarrollo/producción y tratamiento de logs como flujos de eventos.
+DevOps Portfolio — Automated Scripts and Docker Infrastructure
+Este repositorio documenta el recorrido integrador de 18 Trabajos Prácticos (TPs) en administración de sistemas, infraestructura cloud-native, contenedorización, orquestación en Kubernetes y un pipeline completo de DevSecOps para la Notes App
+.
+🛠️ Stack Tecnológico
+Capa / Dominio
+Tecnologías Utilizadas
+Sistema Operativo & Scripting
+Linux (Debian/Ubuntu), Bash, cron
+Control de Versiones & GitOps
+Git, Gitflow, GitHub Actions, Gitleaks, git-filter-repo
+Contenedores & Microservicios
+Docker, Docker Compose, Multi-stage Builds, Docker Hub
+Orquestación & K8s
+Kubernetes (k3s/k3d), Helm 3, NGINX Ingress Controller, HPA
+Infraestructura como Código (IaC)
+Terraform (módulos, state, HCL)
+Monitoreo & Observabilidad
+Prometheus, Grafana, Node Exporter, cAdvisor
+Seguridad & DevSecOps (SAST/DAST/SCA)
+OWASP ZAP, Threagile, Semgrep, Trivy, Gitleaks
+Vulnerability Management
+OWASP DefectDojo Community Edition (API v2)
+🚀 Resumen de Trabajos Prácticos (TP01 a TP18)
+🔹 Fundamentos y Administración Linux (TP01 – TP04)
+TP01 — Scripting Bash y Automatización: Script de administración en Bash para automatizar 3 tareas de sistemas: respaldos con marca de tiempo, depuración de logs antiguos y reportes de salud (CPU, memoria, disco)
+. Autenticación SSH/PAT y publicación en GitHub
+.
+TP02 — Gestión de Usuarios y Principio de Menor Privilegio: Configuración del usuario de sistema devops-deploy y grupo deploy-team con permisos reducidos (750/770), sin privilegios de sudo, y script de auditoría de seguridad
+.
+TP03 — Flujo de Trabajo con Gitflow: Implementación del modelo de ramas de Gitflow (main, develop, feature/*, release/*, hotfix/*), merges explícitos --no-ff para trazabilidad de Pull Requests y etiquetado SemVer (v1.0, v1.1)
+.
+TP04 — Configuración YAML y Diagnóstico de Red: Esquema YAML de configuración multi-entorno (dev, staging, prod) según la metodología 12-Factor App, y script de diagnóstico de conectividad (ping, traceroute, dig, curl, ss, ip route)
+.
+🔹 Contenedores, CI/CD y Monitoreo (TP05 – TP08)
+TP05 — Containerización de API Python con Docker: Desarrollo y dockerización de una API Flask, optimización con imágenes livianas (python:3.12-slim), aprovechamiento del caché de capas, usuario no-root (appuser), servidor Gunicorn y publicación en Docker Hub
+.
+TP06 — Microservicios Multi-Contenedor con Docker Compose: Despliegue de la arquitectura de 3 servicios para la Notes App: Frontend Nginx (proxy inverso), Backend Flask (multi-stage build) y Base de Datos PostgreSQL con almacenamiento en volumen persistente y comprobaciones de salud (healthcheck)
+.
+TP07 — Pipeline CI/CD Automatizado con GitHub Actions: Construcción de un pipeline en GitHub Actions con fases de Linting (flake8, yamllint), Testing con pytest y cobertura, compilación multi-plataforma y publicación en Docker Hub con política Lean Andon Cord
+.
+TP08 — Stack de Monitoreo con Prometheus y Grafana: Instrumentación de la app Flask con prometheus_client (métricas Counter, Histogram, Gauge), recolectores Node Exporter y cAdvisor, reglas de alerta (alerts.yml) y provisioning de dashboards e indicadores en Grafana
+.
+🔹 Orquestación en Kubernetes e IaC (TP09 – TP12)
+TP09 — Despliegue Multi-Tier en Kubernetes: Despliegue declarativo en Kubernetes (Namespaces, Secrets Base64, ConfigMaps, PersistentVolumeClaim de 1Gi, Deployments con réplicas y probes de readiness/liveness, y Services ClusterIP y NodePort :30080)
+.
+TP10 — Helm Charts e Ingress Controller: Empaquetado mediante un Chart de Helm personalizado (devops-portfolio), helpers reutilizables (_helpers.tpl), reinicio automático por hash (checksum/config), autoscaling (HPA) y valores desacoplados (values-dev.yaml / values-prod.yaml)
+.
+TP11 — Infraestructura como Código (IaC) con Terraform: Provisionamiento de infraestructura Docker con Terraform. Estructura modularizada (network, storage, app), aislamiento de entornos y gestión del archivo de estado (terraform.tfstate)
+.
+TP12 — Portfolio Centralizado y Salud de Repositorios: Unificación del ecosistema completo de repositorios, matriz técnica de competencias, automatización del pipeline de validación (portfolio-check.yml) y diseño de perfil profesional de GitHub
+.
+🔹 Ciberseguridad Automatizada y DevSecOps (TP13 – TP17)
+TP13 (13B/13C) — Pruebas Dinámicas DAST con OWASP ZAP: Automatización de escaneos DAST con OWASP ZAP Automation Framework en Kubernetes y CI/CD. Rastreo dinámico (Spider tradicional y AJAX), ataques activos (activeScan), fuzzing de la API de notas, manejo seguro de credenciales con GitHub Secrets y exportación SARIF sanitizada hacia GitHub Code Scanning
+.
+TP14 — Modelado Declarativo de Amenazas con Threagile: Implementación de Threat Modeling as Code mediante threagile.yaml. Declaración de activos de información (data_assets), activos técnicos (technical_assets), flujos de datos (data_flows) y límites de confianza (trust_boundaries) para auditoría de riesgos en CI/CD
+.
+TP15 — Análisis Estático SAST Multilenguaje con Semgrep: Inspección estática con Semgrep sobre código Python/Flask (OWASP Top 10), Dockerfiles, HCL de Terraform y manifiestos de Kubernetes con política Andon Cord
+.
+TP16 — Escaneo Multidominio con Trivy (SCA, Container & IaC): Escaneo estático de dependencias de terceros (requirements.txt), capas de imágenes inmutables de contenedor e Infraestructura como Código renderizada previamente con el patrón "Render First, Validate Second" (TP10B)
+.
+TP17 — Detección de Secretos en Git con Gitleaks: Detección de credenciales y claves en el historial completo de commits mediante inspección de firmas Regex y Entropía de Shannon. Configuración de .gitleaks.toml, hooks pre-commit locales y purgado con git-filter-repo
+.
+## TP18 — Gestión Centralizada de Vulnerabilidades con OWASP DefectDojo
+Integración de OWASP DefectDojo Community Edition para consolidar, desduplicar y auditar los hallazgos de ciberseguridad provenientes de OWASP ZAP (DAST), Threagile (Threat Modeling), Semgrep (SAST), Trivy (SCA/Container/IaC) y Gitleaks (Secret Scanning)
+.
+Arquitectura de Integración en 4 Fases
+Fase
+Herramienta
+Función
+Mecanismo
+Fase 1
+Docker Buildx
+Compilación inmutable
+Exporta app-image.tar
+Fase 2
+OWASP ZAP / Threagile / Semgrep / Trivy / Gitleaks
+Auditoría multidominio
+Genera reportes JSON/XML estructurados
+Fase 3
+OWASP DefectDojo
+Vulnerability Management
+Ingestión vía API v2 y deduplicación
+Fase 4
+Helm & K8s
+Despliegue a producción
+Release verificado en Kubernetes
+🛠️ Comandos de Verificación Local
+# Otorgar permisos y ejecutar script de carga a DefectDojo (TP18)
+chmod +x scripts/verificar-defectdojo.sh
+DEFECTDOJO_URL="http://localhost:8080" DEFECTDOJO_API_KEY="tu_token_api_v2" ./scripts/verificar-defectdojo.sh
